@@ -231,328 +231,340 @@
     </div>
 
     <script>
-        // 核心数据存储（localStorage）
-        const STORAGE_KEYS = {
-            pool: 'lottery_pool',       // 抽奖池
-            winners: 'lottery_winners'  // 中奖记录
-        };
+    // 核心数据存储（localStorage）
+    const STORAGE_KEYS = {
+        pool: 'lottery_pool',       // 抽奖池
+        winners: 'lottery_winners'  // 中奖记录
+    };
 
-        // 初始化数据
-        let lotteryPool = JSON.parse(localStorage.getItem(STORAGE_KEYS.pool)) || [];
-        let winners = JSON.parse(localStorage.getItem(STORAGE_KEYS.winners)) || {
-            special: [],
-            first: [],
-            second: [],
-            third: []
-        };
-        let isDrawing = false;  // 是否正在抽奖
-        let drawInterval = null; // 抽奖滚动定时器
+    // 初始化数据
+    let lotteryPool = JSON.parse(localStorage.getItem(STORAGE_KEYS.pool)) || [];
+    let winners = JSON.parse(localStorage.getItem(STORAGE_KEYS.winners)) || {
+        special: [],
+        first: [],
+        second: [],
+        third: []
+    };
+    let isDrawing = false;  // 是否正在抽奖
+    let drawInterval = null; // 抽奖滚动定时器
 
-        // DOM元素
-        const elements = {
-            poolCount: document.getElementById('pool-count'),
-            clearPool: document.getElementById('clear-pool'),
-            startDraw: document.getElementById('start-draw'),
-            stopDraw: document.getElementById('stop-draw'),
-            resetWinners: document.getElementById('reset-winners'),
-            drawContainer: document.getElementById('draw-container'),
-            awardTitle: document.getElementById('award-title'),
-            currentAward: document.getElementById('current-award'),
-            addModal: document.getElementById('add-participant-modal'),
-            submitParticipant: document.getElementById('submit-participant'),
-            closeModal: document.getElementById('close-modal'),
-            participantName: document.getElementById('participant-name'),
-            participantAvatar: document.getElementById('participant-avatar'),
-            // 奖项人数配置
-            specialCount: document.getElementById('special-count'),
-            firstCount: document.getElementById('first-count'),
-            secondCount: document.getElementById('second-count'),
-            thirdCount: document.getElementById('third-count'),
-            // 中奖记录容器
-            specialWinners: document.getElementById('special-winners'),
-            firstWinners: document.getElementById('first-winners'),
-            secondWinners: document.getElementById('second-winners'),
-            thirdWinners: document.getElementById('third-winners')
-        };
+    // DOM元素
+    const elements = {
+        poolCount: document.getElementById('pool-count'),
+        clearPool: document.getElementById('clear-pool'),
+        startDraw: document.getElementById('start-draw'),
+        stopDraw: document.getElementById('stop-draw'),
+        resetWinners: document.getElementById('reset-winners'),
+        drawContainer: document.getElementById('draw-container'),
+        awardTitle: document.getElementById('award-title'),
+        currentAward: document.getElementById('current-award'),
+        addModal: document.getElementById('add-participant-modal'),
+        submitParticipant: document.getElementById('submit-participant'),
+        closeModal: document.getElementById('close-modal'),
+        participantName: document.getElementById('participant-name'),
+        participantAvatar: document.getElementById('participant-avatar'),
+        // 奖项人数配置
+        specialCount: document.getElementById('special-count'),
+        firstCount: document.getElementById('first-count'),
+        secondCount: document.getElementById('second-count'),
+        thirdCount: document.getElementById('third-count'),
+        // 中奖记录容器
+        specialWinners: document.getElementById('special-winners'),
+        firstWinners: document.getElementById('first-winners'),
+        secondWinners: document.getElementById('second-winners'),
+        thirdWinners: document.getElementById('third-winners')
+    };
 
-        // 初始化页面
-        function initPage() {
-            // 更新抽奖池人数
-            updatePoolCount();
-            // 渲染中奖记录
-            renderWinners();
-            // 检查是否是添加参与者页面
-            checkAddParticipant();
-            // 绑定事件
-            bindEvents();
-        }
-
-        // 更新抽奖池人数显示
-        function updatePoolCount() {
-            elements.poolCount.textContent = lotteryPool.length;
-            localStorage.setItem(STORAGE_KEYS.pool, JSON.stringify(lotteryPool));
-        }
-
+    // 初始化页面（修复：等待页面完全加载后执行）
+    function initPage() {
+        // 更新抽奖池人数
+        updatePoolCount();
         // 渲染中奖记录
-        function renderWinners() {
-            // 渲染各奖项中奖记录
-            renderAwardWinners('special', elements.specialWinners);
-            renderAwardWinners('first', elements.firstWinners);
-            renderAwardWinners('second', elements.secondWinners);
-            renderAwardWinners('third', elements.thirdWinners);
-            // 保存到本地存储
-            localStorage.setItem(STORAGE_KEYS.winners, JSON.stringify(winners));
+        renderWinners();
+        // 绑定事件
+        bindEvents();
+        
+        // 修复：延迟执行参数检查，兼容微信浏览器
+        setTimeout(checkAddParticipant, 500);
+    }
+
+    // 更新抽奖池人数显示
+    function updatePoolCount() {
+        elements.poolCount.textContent = lotteryPool.length;
+        localStorage.setItem(STORAGE_KEYS.pool, JSON.stringify(lotteryPool));
+    }
+
+    // 渲染中奖记录
+    function renderWinners() {
+        // 渲染各奖项中奖记录
+        renderAwardWinners('special', elements.specialWinners);
+        renderAwardWinners('first', elements.firstWinners);
+        renderAwardWinners('second', elements.secondWinners);
+        renderAwardWinners('third', elements.thirdWinners);
+        // 保存到本地存储
+        localStorage.setItem(STORAGE_KEYS.winners, JSON.stringify(winners));
+    }
+
+    // 渲染单个奖项的中奖记录
+    function renderAwardWinners(awardKey, container) {
+        const awardWinners = winners[awardKey];
+        if (awardWinners.length === 0) {
+            container.innerHTML = '<span class="text-gray-400 text-sm">暂无中奖记录</span>';
+            return;
         }
+        container.innerHTML = awardWinners.map(user => `
+            <div class="flex flex-col items-center p-2 border rounded-lg winner-highlight">
+                <img src="${user.avatar || 'https://picsum.photos/60/60'}" alt="${user.name}" class="w-12 h-12 rounded-full object-cover">
+                <span class="text-sm mt-1">${user.name}</span>
+            </div>
+        `).join('');
+    }
 
-        // 渲染单个奖项的中奖记录
-        function renderAwardWinners(awardKey, container) {
-            const awardWinners = winners[awardKey];
-            if (awardWinners.length === 0) {
-                container.innerHTML = '<span class="text-gray-400 text-sm">暂无中奖记录</span>';
-                return;
-            }
-            container.innerHTML = awardWinners.map(user => `
-                <div class="flex flex-col items-center p-2 border rounded-lg winner-highlight">
-                    <img src="${user.avatar || 'https://picsum.photos/60/60'}" alt="${user.name}" class="w-12 h-12 rounded-full object-cover">
-                    <span class="text-sm mt-1">${user.name}</span>
-                </div>
-            `).join('');
+    // 修复：增强版参数检查（兼容微信浏览器）
+    function checkAddParticipant() {
+        // 方案1：解析URL参数（主逻辑）
+        const params = new URLSearchParams(window.location.search);
+        // 方案2：兜底检查（防止参数解析失败）
+        const urlHasAddParam = window.location.href.includes('?add=1') || window.location.href.includes('&add=1');
+        
+        // 只要满足一个条件，就弹出弹窗
+        if (params.get('add') === '1' || urlHasAddParam) {
+            // 强制显示弹窗（移除hidden类）
+            elements.addModal.classList.remove('hidden');
+            // 修复：微信浏览器可能遮挡弹窗，强制置顶
+            elements.addModal.style.zIndex = '9999';
+            elements.addModal.style.display = 'flex';
         }
+    }
 
-        // 检查是否是添加参与者页面（?add=1）
-        function checkAddParticipant() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('add') === '1') {
-                elements.addModal.classList.remove('hidden');
-            }
-        }
-
-        // 绑定所有事件
-        function bindEvents() {
-            // 清空抽奖池
-            elements.clearPool.addEventListener('click', () => {
-                if (confirm('确定要清空抽奖池吗？此操作不可恢复！')) {
-                    lotteryPool = [];
-                    updatePoolCount();
-                    alert('抽奖池已清空');
-                }
-            });
-
-            // 开始抽奖
-            elements.startDraw.addEventListener('click', startDrawing);
-
-            // 停止抽奖
-            elements.stopDraw.addEventListener('click', stopDrawing);
-
-            // 重置中奖记录
-            elements.resetWinners.addEventListener('click', () => {
-                if (confirm('确定要重置所有中奖记录吗？')) {
-                    winners = { special: [], first: [], second: [], third: [] };
-                    renderWinners();
-                    alert('中奖记录已重置');
-                }
-            });
-
-            // 提交参与者
-            elements.submitParticipant.addEventListener('click', addParticipant);
-
-            // 关闭弹窗
-            elements.closeModal.addEventListener('click', () => {
-                elements.addModal.classList.add('hidden');
-                elements.participantName.value = '';
-                elements.participantAvatar.value = '';
-            });
-
-            // 切换当前奖项
-            elements.currentAward.addEventListener('change', () => {
-                const awardMap = {
-                    special: '特等奖',
-                    first: '一等奖',
-                    second: '二等奖',
-                    third: '三等奖'
-                };
-                elements.awardTitle.textContent = `${awardMap[elements.currentAward.value]}抽奖`;
-            });
-        }
-
-        // 添加参与者
-        function addParticipant() {
-            const name = elements.participantName.value.trim();
-            const avatarFile = elements.participantAvatar.files[0];
-            
-            if (!name) {
-                alert('请输入你的昵称');
-                return;
-            }
-
-            // 处理头像（转Base64）
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const newParticipant = {
-                    id: Date.now(), // 唯一ID
-                    name: name,
-                    avatar: avatarFile ? e.target.result : 'https://picsum.photos/60/60' // 默认头像
-                };
-
-                // 添加到抽奖池
-                lotteryPool.push(newParticipant);
+    // 绑定所有事件
+    function bindEvents() {
+        // 清空抽奖池
+        elements.clearPool.addEventListener('click', () => {
+            if (confirm('确定要清空抽奖池吗？此操作不可恢复！')) {
+                lotteryPool = [];
                 updatePoolCount();
-
-                // 关闭弹窗
-                elements.addModal.classList.add('hidden');
-                elements.participantName.value = '';
-                elements.participantAvatar.value = '';
-
-                alert('成功加入抽奖池！');
-            };
-
-            if (avatarFile) {
-                reader.readAsDataURL(avatarFile);
-            } else {
-                // 无头像时直接添加
-                const newParticipant = {
-                    id: Date.now(),
-                    name: name,
-                    avatar: 'https://picsum.photos/60/60'
-                };
-                lotteryPool.push(newParticipant);
-                updatePoolCount();
-                elements.addModal.classList.add('hidden');
-                elements.participantName.value = '';
-                alert('成功加入抽奖池！');
+                alert('抽奖池已清空');
             }
-        }
+        });
 
         // 开始抽奖
-        function startDrawing() {
-            // 检查抽奖池是否为空
-            if (lotteryPool.length === 0) {
-                alert('抽奖池为空，请先添加参与者！');
-                return;
-            }
-
-            // 检查是否有足够的未中奖人数（不重复抽奖时）
-            const drawMode = document.querySelector('input[name="draw-mode"]:checked').value;
-            const currentAwardKey = elements.currentAward.value;
-            const awardCount = parseInt(document.getElementById(`${currentAwardKey}-count`).value);
-            
-            if (drawMode === 'unique') {
-                // 过滤已中奖用户
-                const allWinners = [...winners.special, ...winners.first, ...winners.second, ...winners.third];
-                const availableUsers = lotteryPool.filter(user => !allWinners.some(w => w.id === user.id));
-                
-                if (availableUsers.length < awardCount) {
-                    alert(`剩余可抽奖人数不足（仅${availableUsers.length}人），无法抽取${awardCount}人！`);
-                    return;
-                }
-            }
-
-            // 设置抽奖状态
-            isDrawing = true;
-            elements.startDraw.disabled = true;
-            elements.stopDraw.disabled = false;
-
-            // 开始滚动动画
-            drawInterval = setInterval(() => {
-                renderDrawContainer(currentAwardKey, awardCount);
-            }, 100);
-        }
+        elements.startDraw.addEventListener('click', startDrawing);
 
         // 停止抽奖
-        function stopDrawing() {
-            // 清除定时器
-            clearInterval(drawInterval);
-            isDrawing = false;
-            elements.startDraw.disabled = false;
-            elements.stopDraw.disabled = true;
+        elements.stopDraw.addEventListener('click', stopDrawing);
 
-            // 确定中奖用户
-            const currentAwardKey = elements.currentAward.value;
-            const awardCount = parseInt(document.getElementById(`${currentAwardKey}-count`).value);
-            const drawMode = document.querySelector('input[name="draw-mode"]:checked').value;
-
-            // 筛选可中奖用户
-            let availableUsers = [...lotteryPool];
-            if (drawMode === 'unique') {
-                // 排除已中奖用户
-                const allWinners = [...winners.special, ...winners.first, ...winners.second, ...winners.third];
-                availableUsers = availableUsers.filter(user => !allWinners.some(w => w.id === user.id));
+        // 重置中奖记录
+        elements.resetWinners.addEventListener('click', () => {
+            if (confirm('确定要重置所有中奖记录吗？')) {
+                winners = { special: [], first: [], second: [], third: [] };
+                renderWinners();
+                alert('中奖记录已重置');
             }
+        });
 
-            // 随机抽取中奖用户
-            const selectedWinners = [];
-            const shuffledUsers = [...availableUsers].sort(() => Math.random() - 0.5); // 打乱数组
-            for (let i = 0; i < awardCount && i < shuffledUsers.length; i++) {
-                selectedWinners.push(shuffledUsers[i]);
-            }
+        // 提交参与者
+        elements.submitParticipant.addEventListener('click', addParticipant);
 
-            // 添加到中奖记录
-            winners[currentAwardKey] = [...winners[currentAwardKey], ...selectedWinners];
-            
-            // 如果是不重复抽奖，从抽奖池移除（可选：也可保留，仅标记已中奖）
-            if (drawMode === 'unique') {
-                lotteryPool = lotteryPool.filter(user => !selectedWinners.some(w => w.id === user.id));
-                updatePoolCount();
-            }
+        // 关闭弹窗
+        elements.closeModal.addEventListener('click', () => {
+            elements.addModal.classList.add('hidden');
+            elements.participantName.value = '';
+            elements.participantAvatar.value = '';
+        });
 
-            // 渲染中奖结果
-            renderDrawContainer(currentAwardKey, awardCount, selectedWinners);
-            // 更新中奖记录
-            renderWinners();
-
-            // 提示
-            const awardNameMap = {
+        // 切换当前奖项
+        elements.currentAward.addEventListener('change', () => {
+            const awardMap = {
                 special: '特等奖',
                 first: '一等奖',
                 second: '二等奖',
                 third: '三等奖'
             };
-            alert(`${awardNameMap[currentAwardKey]}中奖名单：\n${selectedWinners.map(u => u.name).join(', ')}`);
+            elements.awardTitle.textContent = `${awardMap[elements.currentAward.value]}抽奖`;
+        });
+    }
+
+    // 添加参与者
+    function addParticipant() {
+        const name = elements.participantName.value.trim();
+        const avatarFile = elements.participantAvatar.files[0];
+        
+        if (!name) {
+            alert('请输入你的昵称');
+            return;
         }
 
-        // 渲染抽奖滚动容器
-        function renderDrawContainer(awardKey, count, fixedUsers = null) {
-            const awardCount = count;
-            let displayUsers = [];
+        // 处理头像（转Base64）
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const newParticipant = {
+                id: Date.now(), // 唯一ID
+                name: name,
+                avatar: avatarFile ? e.target.result : 'https://picsum.photos/60/60' // 默认头像
+            };
 
-            if (fixedUsers) {
-                // 显示固定中奖用户（停止后）
-                displayUsers = fixedUsers;
-            } else {
-                // 随机选择用户（滚动中）
-                const drawMode = document.querySelector('input[name="draw-mode"]:checked').value;
-                let availableUsers = [...lotteryPool];
-                
-                if (drawMode === 'unique') {
-                    const allWinners = [...winners.special, ...winners.first, ...winners.second, ...winners.third];
-                    availableUsers = availableUsers.filter(user => !allWinners.some(w => w.id === user.id));
-                }
+            // 添加到抽奖池
+            lotteryPool.push(newParticipant);
+            updatePoolCount();
 
-                // 随机选择
-                displayUsers = [...availableUsers].sort(() => Math.random() - 0.5).slice(0, awardCount);
+            // 关闭弹窗
+            elements.addModal.classList.add('hidden');
+            elements.participantName.value = '';
+            elements.participantAvatar.value = '';
+
+            alert('成功加入抽奖池！');
+        };
+
+        if (avatarFile) {
+            reader.readAsDataURL(avatarFile);
+        } else {
+            // 无头像时直接添加
+            const newParticipant = {
+                id: Date.now(),
+                name: name,
+                avatar: 'https://picsum.photos/60/60'
+            };
+            lotteryPool.push(newParticipant);
+            updatePoolCount();
+            elements.addModal.classList.add('hidden');
+            elements.participantName.value = '';
+            alert('成功加入抽奖池！');
+        }
+    }
+
+    // 开始抽奖
+    function startDrawing() {
+        // 检查抽奖池是否为空
+        if (lotteryPool.length === 0) {
+            alert('抽奖池为空，请先添加参与者！');
+            return;
+        }
+
+        // 检查是否有足够的未中奖人数（不重复抽奖时）
+        const drawMode = document.querySelector('input[name="draw-mode"]:checked').value;
+        const currentAwardKey = elements.currentAward.value;
+        const awardCount = parseInt(document.getElementById(`${currentAwardKey}-count`).value);
+        
+        if (drawMode === 'unique') {
+            // 过滤已中奖用户
+            const allWinners = [...winners.special, ...winners.first, ...winners.second, ...winners.third];
+            const availableUsers = lotteryPool.filter(user => !allWinners.some(w => w.id === user.id));
+            
+            if (availableUsers.length < awardCount) {
+                alert(`剩余可抽奖人数不足（仅${availableUsers.length}人），无法抽取${awardCount}人！`);
+                return;
+            }
+        }
+
+        // 设置抽奖状态
+        isDrawing = true;
+        elements.startDraw.disabled = true;
+        elements.stopDraw.disabled = false;
+
+        // 开始滚动动画
+        drawInterval = setInterval(() => {
+            renderDrawContainer(currentAwardKey, awardCount);
+        }, 100);
+    }
+
+    // 停止抽奖
+    function stopDrawing() {
+        // 清除定时器
+        clearInterval(drawInterval);
+        isDrawing = false;
+        elements.startDraw.disabled = false;
+        elements.stopDraw.disabled = true;
+
+        // 确定中奖用户
+        const currentAwardKey = elements.currentAward.value;
+        const awardCount = parseInt(document.getElementById(`${currentAwardKey}-count`).value);
+        const drawMode = document.querySelector('input[name="draw-mode"]:checked').value;
+
+        // 筛选可中奖用户
+        let availableUsers = [...lotteryPool];
+        if (drawMode === 'unique') {
+            // 排除已中奖用户
+            const allWinners = [...winners.special, ...winners.first, ...winners.second, ...winners.third];
+            availableUsers = availableUsers.filter(user => !allWinners.some(w => w.id === user.id));
+        }
+
+        // 随机抽取中奖用户
+        const selectedWinners = [];
+        const shuffledUsers = [...availableUsers].sort(() => Math.random() - 0.5); // 打乱数组
+        for (let i = 0; i < awardCount && i < shuffledUsers.length; i++) {
+            selectedWinners.push(shuffledUsers[i]);
+        }
+
+        // 添加到中奖记录
+        winners[currentAwardKey] = [...winners[currentAwardKey], ...selectedWinners];
+        
+        // 如果是不重复抽奖，从抽奖池移除（可选：也可保留，仅标记已中奖）
+        if (drawMode === 'unique') {
+            lotteryPool = lotteryPool.filter(user => !selectedWinners.some(w => w.id === user.id));
+            updatePoolCount();
+        }
+
+        // 渲染中奖结果
+        renderDrawContainer(currentAwardKey, awardCount, selectedWinners);
+        // 更新中奖记录
+        renderWinners();
+
+        // 提示
+        const awardNameMap = {
+            special: '特等奖',
+            first: '一等奖',
+            second: '二等奖',
+            third: '三等奖'
+        };
+        alert(`${awardNameMap[currentAwardKey]}中奖名单：\n${selectedWinners.map(u => u.name).join(', ')}`);
+    }
+
+    // 渲染抽奖滚动容器
+    function renderDrawContainer(awardKey, count, fixedUsers = null) {
+        const awardCount = count;
+        let displayUsers = [];
+
+        if (fixedUsers) {
+            // 显示固定中奖用户（停止后）
+            displayUsers = fixedUsers;
+        } else {
+            // 随机选择用户（滚动中）
+            const drawMode = document.querySelector('input[name="draw-mode"]:checked').value;
+            let availableUsers = [...lotteryPool];
+            
+            if (drawMode === 'unique') {
+                const allWinners = [...winners.special, ...winners.first, ...winners.second, ...winners.third];
+                availableUsers = availableUsers.filter(user => !allWinners.some(w => w.id === user.id));
             }
 
-            // 渲染到容器
-            elements.drawContainer.innerHTML = displayUsers.map(user => `
-                <div class="flex flex-col items-center p-3 border rounded-lg ${fixedUsers ? 'winner-highlight' : 'roll-animation'}">
-                    <img src="${user.avatar}" alt="${user.name}" class="w-16 h-16 rounded-full object-cover mb-1">
-                    <span class="text-sm font-medium">${user.name}</span>
+            // 随机选择
+            displayUsers = [...availableUsers].sort(() => Math.random() - 0.5).slice(0, awardCount);
+        }
+
+        // 渲染到容器
+        elements.drawContainer.innerHTML = displayUsers.map(user => `
+            <div class="flex flex-col items-center p-3 border rounded-lg ${fixedUsers ? 'winner-highlight' : 'roll-animation'}">
+                <img src="${user.avatar}" alt="${user.name}" class="w-16 h-16 rounded-full object-cover mb-1">
+                <span class="text-sm font-medium">${user.name}</span>
+            </div>
+        `).join('');
+
+        // 如果没有用户
+        if (displayUsers.length === 0) {
+            elements.drawContainer.innerHTML = `
+                <div class="text-gray-400 text-center">
+                    <i class="fa fa-info-circle text-4xl mb-2"></i>
+                    <p>暂无可抽奖用户</p>
                 </div>
-            `).join('');
-
-            // 如果没有用户
-            if (displayUsers.length === 0) {
-                elements.drawContainer.innerHTML = `
-                    <div class="text-gray-400 text-center">
-                        <i class="fa fa-info-circle text-4xl mb-2"></i>
-                        <p>暂无可抽奖用户</p>
-                    </div>
-                `;
-            }
+            `;
         }
+    }
 
-        // 初始化页面
+    // 修复：等待页面完全加载后再初始化（兼容所有浏览器）
+    document.addEventListener('DOMContentLoaded', function() {
         initPage();
-    </script>
+    });
+</script>
 </body>
 </html>
