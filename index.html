@@ -47,20 +47,20 @@
                 <!-- 1. 抽奖池管理 -->
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fa fa-users mr-2 text-blue-500"></i> 抽奖池管理
+                        <<i class="fa fa-users mr-2 text-blue-500"></</i> 抽奖池管理
                     </h2>
                     
                     <!-- 扫码添加参与者提示 -->
                     <div class="bg-blue-50 rounded-lg p-4 mb-4">
                         <p class="text-sm text-gray-700 mb-2">参与者扫码添加：</p>
                         <div class="flex justify-center">
-                            <!-- 这里的二维码需要替换为你自己的：指向当前页面的?add=1参数（本地运行需用内网穿透） -->
+                            <!-- 🔥 已替换为你的专属二维码（指向 https://aiai-god.github.io/annual-lottery/?add=1） -->
                             <div class="bg-white p-2 rounded shadow">
-                                <img src="https://picsum.photos/200/200" alt="扫码参与抽奖" class="w-48 h-48">
+                                <img src="https://cli.im/api/qrcode/code?text=https%3A%2F%2Faiai-god.github.io%2Fannual-lottery%2F%3Fadd%3D1&width=200&height=200&margin=10&level=H" alt="扫码参与抽奖" class="w-48 h-48">
                                 <p class="text-xs text-center mt-1 text-gray-500">扫码加入抽奖池</p>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 text-center mt-2">提示：需将此页面部署到公网，生成指向 ?add=1 的二维码</p>
+                        <p class="text-xs text-gray-500 text-center mt-2">提示：二维码永久有效，扫码直接弹出添加窗口</p>
                     </div>
 
                     <!-- 抽奖池统计 -->
@@ -71,14 +71,14 @@
 
                     <!-- 清空抽奖池按钮 -->
                     <button id="clear-pool" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition-colors">
-                        <i class="fa fa-trash mr-1"></i> 清空抽奖池
+                        <<i class="fa fa-trash mr-1"></</i> 清空抽奖池
                     </button>
                 </div>
 
                 <!-- 2. 奖项配置 -->
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fa fa-trophy mr-2 text-yellow-500"></i> 奖项配置
+                        <<i class="fa fa-trophy mr-2 text-yellow-500"></</i> 奖项配置
                     </h2>
 
                     <!-- 奖项人数配置 -->
@@ -131,21 +131,21 @@
                 <!-- 3. 抽奖操作 -->
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fa fa-play-circle mr-2 text-green-500"></i> 抽奖操作
+                        <<i class="fa fa-play-circle mr-2 text-green-500"></</i> 抽奖操作
                     </h2>
 
                     <div class="flex gap-3">
                         <button id="start-draw" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg transition-colors text-lg">
-                            <i class="fa fa-play mr-1"></i> 开始抽奖
+                            <<i class="fa fa-play mr-1"></</i> 开始抽奖
                         </button>
                         <button id="stop-draw" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-lg disabled:opacity-50" disabled>
-                            <i class="fa fa-pause mr-1"></i> 停止抽奖
+                            <<i class="fa fa-pause mr-1"></</i> 停止抽奖
                         </button>
                     </div>
 
                     <!-- 重置中奖记录 -->
                     <button id="reset-winners" class="w-full mt-3 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg transition-colors">
-                        <i class="fa fa-refresh mr-1"></i> 重置所有中奖记录
+                        <<i class="fa fa-refresh mr-1"></</i> 重置所有中奖记录
                     </button>
                 </div>
             </div>
@@ -162,7 +162,7 @@
                     <div id="draw-container" class="flex-1 flex flex-wrap justify-center items-center gap-4 overflow-auto">
                         <!-- 初始提示 -->
                         <div class="text-gray-400 text-center">
-                            <i class="fa fa-info-circle text-4xl mb-2"></i>
+                            <<i class="fa fa-info-circle text-4xl mb-2"></</i>
                             <p>点击「开始抽奖」开始滚动</p>
                             <p class="text-xs mt-1">抽奖池为空时无法开始</p>
                         </div>
@@ -172,7 +172,7 @@
                 <!-- 2. 中奖记录展示 -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fa fa-list mr-2 text-purple-500"></i> 中奖记录
+                        <<i class="fa fa-list mr-2 text-purple-500"></</i> 中奖记录
                     </h2>
 
                     <!-- 分奖项展示 -->
@@ -544,7 +544,7 @@
             if (displayUsers.length === 0) {
                 elements.drawContainer.innerHTML = `
                     <div class="text-gray-400 text-center">
-                        <i class="fa fa-info-circle text-4xl mb-2"></i>
+                        <<i class="fa fa-info-circle text-4xl mb-2"></</i>
                         <p>暂无可抽奖用户</p>
                     </div>
                 `;
